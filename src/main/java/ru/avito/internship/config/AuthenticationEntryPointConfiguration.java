@@ -16,7 +16,7 @@ public class AuthenticationEntryPointConfiguration implements AuthenticationEntr
             HttpServletRequest request,
             HttpServletResponse response,
             AuthenticationException authException
-    ) throws IOException, ServletException {
+    ) throws IOException {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication error: Invalid token");
     }
 }
