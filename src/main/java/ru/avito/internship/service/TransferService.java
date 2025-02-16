@@ -1,12 +1,16 @@
 package ru.avito.internship.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.avito.internship.domain.dto.InventoryElement;
 import ru.avito.internship.domain.dto.ReceiptElement;
 import ru.avito.internship.domain.dto.TransferRequest;
 import ru.avito.internship.domain.dto.TransfersHistory;
+import ru.avito.internship.domain.exception.InsufficientFundsException;
+import ru.avito.internship.domain.exception.MerchNotFoundException;
+import ru.avito.internship.domain.exception.UserNotFoundException;
 import ru.avito.internship.domain.model.Inventory;
 import ru.avito.internship.domain.model.InventoryKey;
 import ru.avito.internship.domain.model.Transfer;
@@ -37,11 +41,11 @@ public class TransferService {
     @Transactional
     public void buyMerch(String item) {
         var merch = merchRepository.findByItem(item)
-                .orElseThrow(() -> new RuntimeException("Товар не найден"));
+                .orElseThrow(() -> new MerchNotFoundException("Product not found: " + item));
 
         var user = userService.getCurrentUser();
         if (user.getBalance() < merch.getPrice()) {
-            throw new RuntimeException("Недостаточно средств");
+            throw new InsufficientFundsException("Insufficient funds in the account: " + user.getBalance());
         }
 
         user.setBalance(user.getBalance() - merch.getPrice());
@@ -59,21 +63,25 @@ public class TransferService {
     public void makeTransfer(String receiverName, Integer amount) {
         var sender = userService.getCurrentUser();
         if (sender.getBalance() < amount) {
-            throw new RuntimeException("Недостаточно средств");
+            throw new InsufficientFundsException("Insufficient funds in the account: " + sender.getBalance());
         }
 
-        var receiver = userService.getByUsername(receiverName);
-        var transfer = new Transfer();
-        transfer.setSender(sender.getId());
-        transfer.setRecipient(receiver.getId());
-        transfer.setAmount(amount);
-        saveTransfer(transfer);
+        try{
+            var receiver = userService.getByUsername(receiverName);
+            var transfer = new Transfer();
+            transfer.setSender(sender.getId());
+            transfer.setRecipient(receiver.getId());
+            transfer.setAmount(amount);
+            saveTransfer(transfer);
 
-        sender.setBalance(sender.getBalance() - amount);
-        receiver.setBalance(receiver.getBalance() + amount);
+            sender.setBalance(sender.getBalance() - amount);
+            receiver.setBalance(receiver.getBalance() + amount);
 
-        userService.save(sender);
-        userService.save(receiver);
+            userService.save(sender);
+            userService.save(receiver);
+        } catch (UsernameNotFoundException e) {
+            throw new UserNotFoundException("User not found: " + receiverName);
+        }
     }
 
     public TransfersHistory getUserTransfersHistory(Long userId) {
@@ -100,11 +108,11 @@ public class TransferService {
     public List<InventoryElement> getUserInventory(Long userId) {
         List<InventoryElement> inventoryList = new ArrayList<>();
 
-        for (Inventory inventoryItem : inventoryRepository.findAllById_UserId(userId)) {
-            var merch = merchRepository.findById(inventoryItem.getId().getMerchId())
-                    .orElseThrow(() -> new RuntimeException("Товар не найден"));
+        for (Inventory elem : inventoryRepository.findAllById_UserId(userId)) {
+            var merch = merchRepository.findById(elem.getId().getMerchId())
+                    .orElseThrow(() -> new MerchNotFoundException("Product not found: " + elem.getId().getMerchId()));
 
-            inventoryList.add(new InventoryElement(merch.getItem(), inventoryItem.getAmount()));
+            inventoryList.add(new InventoryElement(merch.getItem(), elem.getAmount()));
         }
         return inventoryList;
     }

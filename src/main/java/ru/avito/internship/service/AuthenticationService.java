@@ -3,6 +3,7 @@ package ru.avito.internship.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,28 +21,26 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public JwtAuthenticationResponse signIn(SignInRequest request) {
-        try {
-            var user = userService
-                    .userDetailsService()
-                    .loadUserByUsername(request.username());
-
+        User user;
+        if (userService.existsByUsername(request.username())) {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                     request.username(),
                     request.password()
             ));
 
-            var jwt = jwtService.generateToken(user);
-            return new JwtAuthenticationResponse(jwt);
-        } catch (UsernameNotFoundException e) {
-            var user = User.builder()
+            user = (User) userService
+                    .userDetailsService()
+                    .loadUserByUsername(request.username());
+        } else {
+            user = User.builder()
                     .username(request.username())
                     .password(passwordEncoder.encode(request.password()))
+                    .balance(1000)
                     .build();
 
-            userService.create(user);
-
-            var jwt = jwtService.generateToken(user);
-            return new JwtAuthenticationResponse(jwt);
+            userService.save(user);
         }
+        var jwt = jwtService.generateToken(user);
+        return new JwtAuthenticationResponse(jwt);
     }
 }
