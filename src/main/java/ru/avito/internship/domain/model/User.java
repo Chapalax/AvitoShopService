@@ -35,7 +35,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "balance", nullable = false)
-    private Integer balance = 0;
+    private Integer balance = 1000;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
