@@ -1,6 +1,7 @@
 package ru.avito.internship.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,8 +17,8 @@ import ru.avito.internship.service.AuthenticationService;
 public class AuthController {
     private final AuthenticationService authenticationService;
 
-    @PostMapping()
-    public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest request) {
+    @PostMapping
+    public JwtAuthenticationResponse signIn(@RequestBody @Valid @NotNull SignInRequest request) {
         return authenticationService.signIn(request);
     }
 }

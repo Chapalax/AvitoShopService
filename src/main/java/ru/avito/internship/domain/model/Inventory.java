@@ -6,7 +6,7 @@ import lombok.*;
 @Data
 @Entity
 @NoArgsConstructor
-@IdClass(Inventory.class)
+@AllArgsConstructor
 @Table(name = "inventory")
 public class Inventory {
     @EmbeddedId

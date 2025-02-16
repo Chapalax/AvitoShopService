@@ -16,7 +16,7 @@ public class Merch {
     @SequenceGenerator(name = "merch_id_seq", sequenceName = "merch_id_seq", allocationSize = 1)
     private Long id;
 
-    @Column(name = "item", nullable = false)
+    @Column(name = "item", nullable = false, unique = true)
     private String item;
 
     @Column(name = "price", nullable = false)
