@@ -5,14 +5,11 @@ services:
     container_name: avito-shop-service
     build: .
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT}:8080"
     environment:
-      - SERVER_PORT= 8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shop
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATA_SOURCE_PASSWORD=secret
-    volumes:
-      - .m2:/root/.m2
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:${DB_PORT}/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATA_SOURCE_PASSWORD=${DB_PASSWORD}
     stdin_open: true
     tty: true
     depends_on:
@@ -25,11 +22,11 @@ services:
     container_name: postgresql
     restart: always
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: shop
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -45,9 +42,9 @@ services:
       - --hub-mode=off
       - --changelog-file=master.xml
       - --driver=org.postgresql.Driver
-      - --url=jdbc:postgresql://postgres:5432/shop
-      - --username=user
-      - --password=secret
+      - --url=jdbc:postgresql://postgres:${DB_PORT}/${DB_NAME}
+      - --username=${DB_USER}
+      - --password=${DB_PASSWORD}
       - update
     volumes:
       - ./migrations:/liquibase/changelog

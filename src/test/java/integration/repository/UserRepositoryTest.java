@@ -1,5 +1,6 @@
-package integration;
+package integration.repository;
 
+import integration.IntegrationEnvironment;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +14,7 @@ import ru.avito.internship.repository.UserRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = AvitoShopApplication.class)
-public class UserRepositoryTest extends IntegrationEnvironment{
+public class UserRepositoryTest extends IntegrationEnvironment {
 
     @Autowired
     private UserRepository userRepository;
@@ -24,20 +25,20 @@ public class UserRepositoryTest extends IntegrationEnvironment{
     @Test
     @Transactional
     @Rollback
-    public void create_UserTest() {
+    public void saveUserTest() {
         var user = new User();
-        user.setUsername("test");
-        user.setPassword("test");
+        user.setUsername("user");
+        user.setPassword("secret");
 
         assertThat(userRepository.saveAndFlush(user).getId()).isNotNull();
-        assertThat(jdbcTemplate.query("SELECT * FROM users", (rs, rowNum) -> rs.getLong("id")))
+        assertThat(jdbcTemplate.query("SELECT * FROM users WHERE username = 'user'", (rs, rowNum) -> rs.getLong("id")))
                 .hasSize(1);
     }
 
     @Test
     @Transactional
     @Rollback
-    void findByUsername_UserExistsTest() {
+    void findByUsernameUserExistsTest() {
         var user = new User();
         user.setUsername("existing");
         user.setPassword("pwd");
@@ -51,7 +52,7 @@ public class UserRepositoryTest extends IntegrationEnvironment{
     @Test
     @Transactional
     @Rollback
-    void findByUsername_UserNotFoundTest() {
+    void findByUsernameUserNotFoundTest() {
         var result = userRepository.findByUsername("missing");
         assertThat(result).isNotPresent();
     }
@@ -59,7 +60,7 @@ public class UserRepositoryTest extends IntegrationEnvironment{
     @Test
     @Transactional
     @Rollback
-    void existsByUsername_TrueTest() {
+    void existsByUsernameTrueTest() {
         var user = new User();
         user.setUsername("duplicate");
         user.setPassword("pwd");
@@ -69,7 +70,7 @@ public class UserRepositoryTest extends IntegrationEnvironment{
     }
 
     @Test
-    void existsByUsername_FalseTest() {
+    void existsByUsernameFalseTest() {
         assertThat(userRepository.existsByUsername("unknown")).isFalse();
     }
 }
