@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record TransferRequest(
         @NotNull
-        @NotBlank(message = "Имя пользователя не может быть пустыми")
+        @NotBlank(message = "The username cannot be empty")
         String toUser,
 
         @NotNull

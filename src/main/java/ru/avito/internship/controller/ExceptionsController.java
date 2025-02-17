@@ -1,8 +1,10 @@
 package ru.avito.internship.controller;
 
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.avito.internship.domain.dto.ExceptionResponse;
@@ -35,6 +37,24 @@ public class ExceptionsController {
 
     @ExceptionHandler(InsufficientFundsException.class)
     public ResponseEntity<ExceptionResponse> handleInsufficientFundsException(@NotNull InsufficientFundsException e) {
+        return ResponseEntity.status(BAD_REQUEST)
+                .body(new ExceptionResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(@NotNull IllegalArgumentException e) {
+        return ResponseEntity.status(BAD_REQUEST)
+                .body(new ExceptionResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ExceptionResponse> handleConstraintViolationException(@NotNull ConstraintViolationException e) {
+        return ResponseEntity.status(BAD_REQUEST)
+                .body(new ExceptionResponse(e.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(@NotNull MethodArgumentNotValidException e) {
         return ResponseEntity.status(BAD_REQUEST)
                 .body(new ExceptionResponse(e.getMessage()));
     }

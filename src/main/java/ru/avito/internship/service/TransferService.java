@@ -61,6 +61,10 @@ public class TransferService {
 
     @Transactional
     public void makeTransfer(String receiverName, Integer amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount should be positive: " + amount);
+        }
+
         var sender = userService.getCurrentUser();
         if (sender.getBalance() < amount) {
             throw new InsufficientFundsException("Insufficient funds in the account: " + sender.getBalance());
